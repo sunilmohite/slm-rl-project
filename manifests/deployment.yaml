@@ -1,1 +1,41 @@
-
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slm-inference
+  labels:
+    app: slm-inference
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slm-inference
+  template:
+    metadata:
+      labels:
+        app: slm-inference
+    spec:
+      containers:
+        - name: slm-inference
+          # Update <your-project> after building/pushing with `oc new-build` / `oc start-build`
+          image: image-registry.openshift-image-registry.svc:5000/<your-project>/slm-inference:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 20
